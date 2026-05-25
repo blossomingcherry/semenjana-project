@@ -160,5 +160,3 @@ Foto tetap tampil sebagai **emoji** (fallback). Aplikasi tetap bisa berjalan tan
 > Dibuat dengan ❤️ untuk Semenjana Ketan & Kopi
 
 // pancingan deploy
-
-# Project Semenjana - Deploy Murti
