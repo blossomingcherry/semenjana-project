@@ -78,7 +78,6 @@ export default function ReceiptPage() {
         <div className="rcpt-ft">⭐ Terima kasih! Tag kami @semenjana_ketan.kopi 📸</div>
       </div>
 
-      <button className="btn-b" onClick={download}>📥 Download Struk (.txt)</button>
       <button className="btn-r" onClick={() => d({ type: "SET_VIEW", v: "menu" })}>🍚 Pesan Lagi</button>
     </div>
   );

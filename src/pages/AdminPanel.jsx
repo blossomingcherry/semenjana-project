@@ -1,26 +1,31 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { Ctx } from "../context/AppContext";
 import { CATS } from "../data/menuData";
-import { addMenu, editMenu, deleteMenu, updateOrderStatus } from "../api";
+import { addMenu, editMenu, deleteMenu, updateOrderStatus, getOrders } from "../api";
 
 const API_URL = "http://localhost:3001";
 
 export default function AdminPanel() {
   const { s, d } = useContext(Ctx);
-  const [tab, setTab]     = useState("orders");
-  const [modal, setModal] = useState(null);
-  const [form, setForm]   = useState({ name:"", price:"", cat:"reguler", img:"🍚", desc:"", fav:false, photo_url:"" });
+  const [tab, setTab]       = useState("orders");
+  const [modal, setModal]   = useState(null);
+  const [form, setForm]     = useState({ name:"", price:"", cat:"reguler", img:"🍚", desc:"", fav:false, photo_url:"" });
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading]   = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all"); // Filter state untuk status pesanan
   const fileRef = useRef();
- useEffect(() => {
-    const interval = setInterval(async () => {
+
+  // Load pesanan saat pertama buka + auto refresh tiap 3 detik
+  useEffect(() => {
+    const fetchOrders = async () => {
       try {
-        const { getOrders } = await import("../api");
         const orders = await getOrders();
         d({ type:"SET_ORDERS", orders });
       } catch(e) { console.warn(e); }
-    }, 5000);
+    };
+
+    fetchOrders(); // langsung fetch saat buka
+    const interval = setInterval(fetchOrders, 3000); // refresh tiap 3 detik
     return () => clearInterval(interval);
   }, []);
 
@@ -111,20 +116,44 @@ export default function AdminPanel() {
           <>
             <div className="stat3">
               {[
-                { l:"Total",   v:s.orders.length,                                 c:"var(--B)"  },
-                { l:"Pending", v:s.orders.filter(o=>o.status==="pending").length, c:"var(--R)"  },
-                { l:"Selesai", v:s.orders.filter(o=>o.status==="done").length,    c:"var(--GR)" },
-              ].map((c,i) => (
-                <div key={i} className="scard">
-                  <div className="scard-n" style={{ color:c.c }}>{c.v}</div>
-                  <div className="scard-l">{c.l}</div>
+                { id:"all",     l:"Total",   v:s.orders.length,                                 c:"var(--B)"  },
+                { id:"pending", l:"Pending", v:s.orders.filter(o=>o.status==="pending").length, c:"var(--R)"  },
+                { id:"ready",   l:"Siap",    v:s.orders.filter(o=>o.status==="ready").length,   c:"var(--OR)" },
+                { id:"done",    l:"Selesai", v:s.orders.filter(o=>o.status==="done").length,    c:"var(--GR)" },
+              ].map((card) => (
+                <div 
+                  key={card.id} 
+                  className="scard"
+                  onClick={() => setFilterStatus(card.id)}
+                  style={{
+                    cursor: "pointer",
+                    border: filterStatus === card.id ? "2px solid var(--B)" : "1px solid transparent",
+                    background: filterStatus === card.id ? "rgba(0,0,0,0.05)" : "transparent",
+                    transition: "all 0.2s ease",
+                    borderRadius: "8px",
+                    padding: "12px",
+                  }}
+                >
+                  <div className="scard-n" style={{ color:card.c }}>{card.v}</div>
+                  <div className="scard-l">{card.l}</div>
                 </div>
               ))}
             </div>
-            {s.loading && <div style={{ textAlign:"center", color:"var(--G)", padding:20 }}>⏳ Memuat pesanan...</div>}
+
+            {s.loading && (
+              <div style={{ textAlign:"center", color:"var(--G)", padding:20 }}>
+                ⏳ Memuat pesanan...
+              </div>
+            )}
+
             {!s.orders.length && !s.loading ? (
-              <div className="empty"><span className="empty-e">📭</span><p>Belum ada pesanan masuk</p></div>
-            ) : s.orders.map(ord => (
+              <div className="empty">
+                <span className="empty-e">📭</span>
+                <p>Belum ada pesanan masuk</p>
+              </div>
+            ) : s.orders
+                .filter(ord => filterStatus === "all" || ord.status === filterStatus)
+                .map(ord => (
               <div key={ord.id} className="ao-card">
                 <div className="ao-hd">
                   <div>
@@ -141,7 +170,6 @@ export default function AdminPanel() {
                     }}
                   >
                     <option value="pending">⏳ Pending</option>
-                    <option value="preparing">👨‍🍳 Dimasak</option>
                     <option value="ready">🔔 Siap</option>
                     <option value="done">✅ Selesai</option>
                   </select>
@@ -156,6 +184,37 @@ export default function AdminPanel() {
                     via {ord.method==="kasir"?"💵 Kasir":ord.method==="qris"?"📱 QRIS":"🏦 Transfer"}
                   </div>
                 </div>
+                <button
+                  style={{ marginTop:8, width:"100%", background:"var(--B)", color:"#fff", border:"none", borderRadius:8, padding:"8px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito',sans-serif" }}
+                  onClick={() => {
+                    const txt = [
+                      "==============================",
+                      "         SEMENJANA",
+                      "    KETAN SUSU & KOPI",
+                      "==============================",
+                      `ID    : ${ord.id}`,
+                      `Tgl   : ${ord.date}  ${ord.time}`,
+                      `Meja  : ${ord.table}`,
+                      `Nama  : ${ord.customer}`,
+                      "------------------------------",
+                      "PESANAN:",
+                      ...ord.items?.map(i => `${i.name} x${i.qty}  Rp ${(i.price * i.qty).toLocaleString("id-ID")}`) || [],
+                      "------------------------------",
+                      `TOTAL : Rp ${ord.total?.toLocaleString("id-ID")}`,
+                      "==============================",
+                      "  Terima kasih sudah makan",
+                      "     di Semenjana!",
+                      "  @semenjana_ketan.kopi",
+                      "==============================",
+                    ].join("\n");
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(new Blob([txt], { type:"text/plain" }));
+                    a.download = `struk-${ord.id}.txt`;
+                    a.click();
+                  }}
+                >
+                  📥 Download Struk
+                </button>
               </div>
             ))}
           </>
@@ -164,7 +223,9 @@ export default function AdminPanel() {
         {/* MENU */}
         {tab === "menu" && (
           <>
-            <button className="btn-b" style={{ marginBottom:12 }} onClick={openAdd}>+ Tambah Menu Baru</button>
+            <button className="btn-b" style={{ marginBottom:12 }} onClick={openAdd}>
+              + Tambah Menu Baru
+            </button>
             {s.menuItems.map(item => (
               <div key={item.id} className="am-card">
                 <div className="am-img">
@@ -187,7 +248,6 @@ export default function AdminPanel() {
             ))}
           </>
         )}
-
       </div>
 
       {/* MODAL */}

@@ -1,7 +1,7 @@
 import { QRCodeSVG } from "qrcode.react";
 
 export default function QRSvg({ size = 130, table = "" }) {
-  const url = `https://domains-themes-gear-thru.trycloudflare.com/`;
+  const url = `https://semenjana-project.vercel.app/`;
   //                 ↑ ganti ini dengan IP kamu
 
   return (

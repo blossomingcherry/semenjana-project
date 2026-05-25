@@ -1,6 +1,5 @@
 import { useState, useContext } from "react";
 import { Ctx } from "../context/AppContext";
-import { placeOrder } from "../api";
 
 export default function PaymentPage() {
   const { s, d } = useContext(Ctx);
@@ -14,21 +13,35 @@ export default function PaymentPage() {
       id:       orderId,
       table:    s.tableNumber,
       customer: s.customerName || "Pelanggan",
-      items:    s.cart,
+      items:    s.cart.map(i => ({
+        id:    i.id,
+        name:  i.name,
+        img:   i.img || "🍚",
+        price: i.price,
+        qty:   i.qty,
+      })),
       total,
-      method:   "kasir",
+      method: "kasir",
     };
 
     setLoading(true);
     try {
-      await placeOrder(orderData);
+      // Simpan ke database
+      const res = await fetch("http://localhost:3001/api/orders", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(orderData),
+      });
+      const data = await res.json();
+      console.log("Order saved:", data);
     } catch (e) {
       console.warn("Gagal simpan ke DB:", e.message);
     } finally {
       setLoading(false);
     }
 
-    d({ type: "PLACE_ORDER", total, method: "kasir", orderId });
+    // Update state React untuk tampilan receipt
+    d({ type:"PLACE_ORDER", total, method:"kasir", orderId });
   };
 
   return (
@@ -42,11 +55,15 @@ export default function PaymentPage() {
       {s.cart.map(item => (
         <div className="ci" key={item.id}>
           <div className="ci-img">
-            {item.photo_url ? <img src={item.photo_url} alt={item.name}/> : item.img}
+            {item.photo_url
+              ? <img src={item.photo_url} alt={item.name}/>
+              : item.img}
           </div>
           <div style={{ flex:1 }}>
             <div className="ci-n">{item.name}</div>
-            <div className="ci-p">Rp {item.price.toLocaleString("id-ID")} × {item.qty}</div>
+            <div className="ci-p">
+              Rp {item.price.toLocaleString("id-ID")} × {item.qty}
+            </div>
           </div>
           <div style={{ fontWeight:800, color:"var(--B)", fontSize:13 }}>
             Rp {(item.price * item.qty).toLocaleString("id-ID")}
@@ -62,10 +79,18 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      <button className="btn-b" onClick={confirm} disabled={loading} style={{ marginTop:16 }}>
+      <button
+        className="btn-b"
+        onClick={confirm}
+        disabled={loading}
+        style={{ marginTop:16 }}
+      >
         {loading ? "⏳ Memproses..." : "✅ Konfirmasi Pesanan"}
       </button>
-      <button className="btn-sm-g" onClick={() => d({ type:"SET_VIEW", v:"cart" })}>
+      <button
+        className="btn-sm-g"
+        onClick={() => d({ type:"SET_VIEW", v:"cart" })}
+      >
         ← Kembali ke Keranjang
       </button>
     </div>
