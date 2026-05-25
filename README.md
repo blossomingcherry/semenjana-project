@@ -1,4 +1,5 @@
 # 🍚 SEMENJANA – Menu Digital & Kasir
+
 > Ketan Susu & Kopi · @semenjana_ketan.kopi
 
 ---
@@ -64,9 +65,9 @@ Edit konfigurasi database di `server.js` (baris bagian `createPool`):
 
 ```js
 const db = mysql2.createPool({
-  host:     "localhost",
-  user:     "root",       // ← username MySQL kamu
-  password: "",           // ← password MySQL kamu
+  host: "localhost",
+  user: "root", // ← username MySQL kamu
+  password: "", // ← password MySQL kamu
   database: "semenjana_db",
 });
 ```
@@ -108,50 +109,54 @@ Aplikasi jalan di → `http://localhost:5173`
 7. Klik **Simpan**
 
 ### Foto disimpan di mana?
+
 - File fisik: `backend/uploads/menu_xxxxx.jpg`
 - URL yang tersimpan di DB: `/uploads/menu_xxxxx.jpg`
 - Diakses via: `http://localhost:3001/uploads/menu_xxxxx.jpg`
 
 ### Jika tidak pakai backend
+
 Foto tetap tampil sebagai **emoji** (fallback). Aplikasi tetap bisa berjalan tanpa backend — semua state disimpan di memory React.
 
 ---
 
 ## 🔑 Login
 
-| Role   | Cara Masuk                                      |
-|--------|-------------------------------------------------|
-| User   | Isi Nomor Meja → Masuk & Lihat Menu             |
-| Admin  | Klik "Login Admin / Kasir" → Password: `semenjana123` |
+| Role  | Cara Masuk                                            |
+| ----- | ----------------------------------------------------- |
+| User  | Isi Nomor Meja → Masuk & Lihat Menu                   |
+| Admin | Klik "Login Admin / Kasir" → Password: `semenjana123` |
 
 ---
 
 ## 🛠 API Endpoint (Backend)
 
-| Method | Endpoint                    | Fungsi                        |
-|--------|-----------------------------|-------------------------------|
-| GET    | `/api/menu`                 | Ambil semua menu aktif        |
-| POST   | `/api/menu`                 | Tambah menu baru              |
-| PUT    | `/api/menu/:id`             | Edit menu                     |
-| DELETE | `/api/menu/:id`             | Hapus menu (soft delete)      |
-| POST   | `/api/upload`               | Upload foto (multipart/form)  |
-| GET    | `/api/orders`               | Semua pesanan (admin)         |
-| GET    | `/api/orders/table/:no`     | Pesanan per meja (user)       |
-| POST   | `/api/orders`               | Buat pesanan baru             |
-| PATCH  | `/api/orders/:id/status`    | Update status pesanan         |
-| GET    | `/api/sales?days=7`         | Data penjualan 7 hari         |
+| Method | Endpoint                 | Fungsi                       |
+| ------ | ------------------------ | ---------------------------- |
+| GET    | `/api/menu`              | Ambil semua menu aktif       |
+| POST   | `/api/menu`              | Tambah menu baru             |
+| PUT    | `/api/menu/:id`          | Edit menu                    |
+| DELETE | `/api/menu/:id`          | Hapus menu (soft delete)     |
+| POST   | `/api/upload`            | Upload foto (multipart/form) |
+| GET    | `/api/orders`            | Semua pesanan (admin)        |
+| GET    | `/api/orders/table/:no`  | Pesanan per meja (user)      |
+| POST   | `/api/orders`            | Buat pesanan baru            |
+| PATCH  | `/api/orders/:id/status` | Update status pesanan        |
+| GET    | `/api/sales?days=7`      | Data penjualan 7 hari        |
 
 ---
 
 ## 📦 Tech Stack
 
-| Layer    | Teknologi                              |
-|----------|----------------------------------------|
-| Frontend | React 18, Vite, CSS-in-JS              |
-| Backend  | Node.js, Express, Multer               |
-| Database | MySQL / MariaDB                        |
+| Layer    | Teknologi                                |
+| -------- | ---------------------------------------- |
+| Frontend | React 18, Vite, CSS-in-JS                |
+| Backend  | Node.js, Express, Multer                 |
+| Database | MySQL / MariaDB                          |
 | Upload   | Multer (lokal) — bisa diganti Cloudinary |
 
 ---
 
 > Dibuat dengan ❤️ untuk Semenjana Ketan & Kopi
+
+// pancingan deploy
